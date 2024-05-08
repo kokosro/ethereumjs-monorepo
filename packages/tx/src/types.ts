@@ -19,6 +19,8 @@ export type {
   AccessListItem,
 } from '@ethereumjs/common'
 
+import type { DepositL2Transaction } from './depositL2Transaction.js'
+
 /**
  * Can be used in conjunction with {@link Transaction[TransactionType].supports}
  * to query on tx capabilities
@@ -116,13 +118,15 @@ export enum TransactionType {
   AccessListEIP2930 = 1,
   FeeMarketEIP1559 = 2,
   BlobEIP4844 = 3,
+  DepositL2 = 126,
 }
 
 export interface Transaction {
   [TransactionType.Legacy]: LegacyTransaction
   [TransactionType.FeeMarketEIP1559]: FeeMarketEIP1559Transaction
   [TransactionType.AccessListEIP2930]: AccessListEIP2930Transaction
-  [TransactionType.BlobEIP4844]: BlobEIP4844Transaction
+  [TransactionType.BlobEIP4844]: BlobEIP4844Transaction,
+  [TransactionType.DepositL2]: DepositL2Transaction
 }
 
 export type TypedTransaction = Transaction[TransactionType]
@@ -141,6 +145,10 @@ export function isFeeMarketEIP1559Tx(tx: TypedTransaction): tx is FeeMarketEIP15
 
 export function isBlobEIP4844Tx(tx: TypedTransaction): tx is BlobEIP4844Transaction {
   return tx.type === TransactionType.BlobEIP4844
+}
+
+export function isDepositL2Tx(tx: TypedTransaction): tx is DepositL2Transaction {
+  return tx.type === TransactionType.DepositL2
 }
 
 export interface TransactionInterface<T extends TransactionType = TransactionType> {
@@ -209,11 +217,19 @@ export interface EIP4844CompatibleTx<T extends TransactionType = TransactionType
   numBlobs(): number
 }
 
+export interface DepositL2CompatibleTx<T extends TransactionType = TransactionType>
+  extends EIP1559CompatibleTx<T> {
+  readonly sourceHash: Uint8Array
+  readonly mint: bigint
+  readonly depositReceiptVersion: bigint
+}
+
 export interface TxData {
   [TransactionType.Legacy]: LegacyTxData
   [TransactionType.AccessListEIP2930]: AccessListEIP2930TxData
   [TransactionType.FeeMarketEIP1559]: FeeMarketEIP1559TxData
   [TransactionType.BlobEIP4844]: BlobEIP4844TxData
+  [TransactionType.DepositL2]: DepositL2TxData
 }
 
 export type TypedTxData = TxData[TransactionType]
@@ -236,6 +252,11 @@ export function isFeeMarketEIP1559TxData(txData: TypedTxData): txData is FeeMark
 export function isBlobEIP4844TxData(txData: TypedTxData): txData is BlobEIP4844TxData {
   const txType = Number(bytesToBigInt(toBytes(txData.type)))
   return txType === TransactionType.BlobEIP4844
+}
+
+export function isDepositL2TxData(txData: TypedTxData): txData is DepositL2TxData {
+  const txType = Number(bytesToBigInt(toBytes(txData.type)))
+  return txType === TransactionType.DepositL2
 }
 
 /**
@@ -358,11 +379,20 @@ export interface BlobEIP4844TxData extends FeeMarketEIP1559TxData {
   blobsData?: string[]
 }
 
+export interface DepositL2TxData extends FeeMarketEIP1559TxData {
+  sourceHash?: BytesLike
+  mint?: BigIntLike
+  depositReceiptVersion?: BigIntLike
+  from?: AddressLike
+  isSystemTx?: BigIntLike
+}
+
 export interface TxValuesArray {
   [TransactionType.Legacy]: LegacyTxValuesArray
   [TransactionType.AccessListEIP2930]: AccessListEIP2930TxValuesArray
   [TransactionType.FeeMarketEIP1559]: FeeMarketEIP1559TxValuesArray
   [TransactionType.BlobEIP4844]: BlobEIP4844TxValuesArray
+  [TransactionType.DepositL2]: DepositL2TxValuesArray
 }
 
 /**
@@ -430,6 +460,21 @@ export type BlobEIP4844NetworkValuesArray = [
   Uint8Array[],
   Uint8Array[],
   Uint8Array[]
+]
+
+/**
+ * Bytes values array for a {@link DepositL2Transaction}
+ */
+
+type DepositL2TxValuesArray = [
+  Uint8Array, // sourceHash
+  Uint8Array, // from
+  Uint8Array, // to
+  Uint8Array, // mint
+  Uint8Array, // value
+  Uint8Array, // gasLimit
+  Uint8Array, // isSystemTx
+  Uint8Array, // data
 ]
 
 type JsonAccessListItem = { address: string; storageKeys: string[] }

@@ -54,8 +54,8 @@
   "dependencies": {
     "lru-cache": "10.1.0",
     "verkle-cryptography-wasm": "^0.4.0",
-    "@ethereumjs/rlp": "^5.0.2",
-    "@ethereumjs/util": "^9.0.3"
+    "@ethereumjs/rlp": "../rlp",
+    "@ethereumjs/util": "../util"
   },
   "engines": {
     "node": ">=18"

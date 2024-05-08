@@ -9,12 +9,14 @@ import {
   TransactionType,
   isAccessListEIP2930TxData,
   isBlobEIP4844TxData,
+  isDepositL2TxData,
   isFeeMarketEIP1559TxData,
   isLegacyTxData,
 } from './types.js'
 
 import type { Transaction, TxData, TxOptions, TypedTxData } from './types.js'
 import type { EthersProvider } from '@ethereumjs/util'
+import { DepositL2Transaction } from './depositL2Transaction.js'
 
 export class TransactionFactory {
   // It is not possible to instantiate a TransactionFactory object.
@@ -32,17 +34,21 @@ export class TransactionFactory {
   ): Transaction[T] {
     if (!('type' in txData) || txData.type === undefined) {
       // Assume legacy transaction
+      console.log('assuming legacy transaction');
       return LegacyTransaction.fromTxData(txData, txOptions) as Transaction[T]
     } else {
       if (isLegacyTxData(txData)) {
         return LegacyTransaction.fromTxData(txData, txOptions) as Transaction[T]
       } else if (isAccessListEIP2930TxData(txData)) {
-        return AccessListEIP2930Transaction.fromTxData(txData, txOptions) as Transaction[T]
+        return AccessListEIP2930Transaction.fromTxData(txData, txOptions) as Transaction[T];
       } else if (isFeeMarketEIP1559TxData(txData)) {
-        return FeeMarketEIP1559Transaction.fromTxData(txData, txOptions) as Transaction[T]
+        return FeeMarketEIP1559Transaction.fromTxData(txData, txOptions) as Transaction[T];
       } else if (isBlobEIP4844TxData(txData)) {
-        return BlobEIP4844Transaction.fromTxData(txData, txOptions) as Transaction[T]
+        return BlobEIP4844Transaction.fromTxData(txData, txOptions) as Transaction[T];
+      } else if (isDepositL2TxData(txData)) {
+        return DepositL2Transaction.fromTxData(txData, txOptions) as Transaction[T];
       } else {
+        console.log(txData);
         throw new Error(`Tx instantiation with type ${(txData as TypedTxData)?.type} not supported`)
       }
     }
@@ -67,6 +73,8 @@ export class TransactionFactory {
           return FeeMarketEIP1559Transaction.fromSerializedTx(data, txOptions) as Transaction[T]
         case TransactionType.BlobEIP4844:
           return BlobEIP4844Transaction.fromSerializedTx(data, txOptions) as Transaction[T]
+        case TransactionType.DepositL2:
+          return DepositL2Transaction.fromSerializedTx(data, txOptions) as Transaction[T]
         default:
           throw new Error(`TypedTransaction with ID ${data[0]} unknown`)
       }
