@@ -170,7 +170,7 @@ export class DepositL2Transaction extends BaseTransaction<TransactionType.Deposi
 
     Legacy.validateHighS(this);
     this.sourceHash = toBytes(txData.sourceHash);
-    this.from = txData.from ? new Address(toBytes(txData.from)) : new Address(new Uint8Array(0));
+    this.from = txData.from ? new Address(toBytes(txData.from)) : new Address(new Uint8Array(20));
     this.isSystemTx = txData.isSystemTx ? bytesToBigInt(toBytes(txData.isSystemTx)) : BigInt(0);
     this.mint = bytesToBigInt(toBytes(txData.mint));
     const freeze = opts?.freeze ?? true

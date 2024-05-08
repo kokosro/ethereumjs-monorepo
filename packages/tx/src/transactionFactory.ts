@@ -9,7 +9,7 @@ import {
   TransactionType,
   isAccessListEIP2930TxData,
   isBlobEIP4844TxData,
-  isDepositL2Tx,
+  isDepositL2TxData,
   isFeeMarketEIP1559TxData,
   isLegacyTxData,
 } from './types.js'
@@ -34,6 +34,7 @@ export class TransactionFactory {
   ): Transaction[T] {
     if (!('type' in txData) || txData.type === undefined) {
       // Assume legacy transaction
+      console.log('assuming legacy transaction');
       return LegacyTransaction.fromTxData(txData, txOptions) as Transaction[T]
     } else {
       if (isLegacyTxData(txData)) {
@@ -44,7 +45,7 @@ export class TransactionFactory {
         return FeeMarketEIP1559Transaction.fromTxData(txData, txOptions) as Transaction[T];
       } else if (isBlobEIP4844TxData(txData)) {
         return BlobEIP4844Transaction.fromTxData(txData, txOptions) as Transaction[T];
-      } else if (isDepositL2Tx(txData)) {
+      } else if (isDepositL2TxData(txData)) {
         return DepositL2Transaction.fromTxData(txData, txOptions) as Transaction[T];
       } else {
         console.log(txData);
